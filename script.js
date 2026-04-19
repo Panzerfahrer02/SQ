@@ -12,11 +12,16 @@ const acceptedList = document.getElementById("acceptedList");
 const completedList = document.getElementById("completedList");
 const rejectedList = document.getElementById("rejectedList");
 
+const requestedCount = document.getElementById("requestedCount");
+const acceptedCount = document.getElementById("acceptedCount");
+const completedCount = document.getElementById("completedCount");
+const rejectedCount = document.getElementById("rejectedCount");
+
 let quests = loadQuests();
 
 renderAll();
 
-questForm.addEventListener("submit", (event) => {
+questForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
   const title = titleInput.value.trim();
@@ -25,16 +30,16 @@ questForm.addEventListener("submit", (event) => {
   const dueDate = dueDateInput.value;
 
   if (!title || !assignee || !dueDate) {
-    alert("Bitte Titel, adressierte Person und Datum ausfüllen.");
+    alert("Bitte Titel, Person und Fälligkeitsdatum ausfüllen.");
     return;
   }
 
   const newQuest = {
-    id: crypto.randomUUID(),
-    title,
-    description,
-    assignee,
-    dueDate,
+    id: createId(),
+    title: title,
+    description: description,
+    assignee: assignee,
+    dueDate: dueDate,
     status: "requested",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -46,7 +51,7 @@ questForm.addEventListener("submit", (event) => {
   questForm.reset();
 });
 
-clearAllBtn.addEventListener("click", () => {
+clearAllBtn.addEventListener("click", function () {
   const confirmed = confirm("Willst du wirklich alle Sidequests löschen?");
   if (!confirmed) return;
 
@@ -55,12 +60,22 @@ clearAllBtn.addEventListener("click", () => {
   renderAll();
 });
 
+function createId() {
+  if (window.crypto && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return "quest-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
+}
+
 function loadQuests() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.error("Fehler beim Laden der Quests:", error);
+    console.error("Fehler beim Laden:", error);
     return [];
   }
 }
@@ -77,25 +92,32 @@ function renderAll() {
   const completed = quests.filter((quest) => quest.status === "completed");
   const rejected = quests.filter((quest) => quest.status === "rejected");
 
+  updateCounters(requested, accepted, completed, rejected);
+
   renderQuestGroup(requested, requestedList);
   renderQuestGroup(accepted, acceptedList);
   renderQuestGroup(completed, completedList);
   renderQuestGroup(rejected, rejectedList);
 }
 
+function updateCounters(requested, accepted, completed, rejected) {
+  if (requestedCount) requestedCount.textContent = requested.length;
+  if (acceptedCount) acceptedCount.textContent = accepted.length;
+  if (completedCount) completedCount.textContent = completed.length;
+  if (rejectedCount) rejectedCount.textContent = rejected.length;
+}
+
 function clearLists() {
-  requestedList.innerHTML = "";
-  acceptedList.innerHTML = "";
-  completedList.innerHTML = "";
-  rejectedList.innerHTML = "";
+  if (requestedList) requestedList.innerHTML = "";
+  if (acceptedList) acceptedList.innerHTML = "";
+  if (completedList) completedList.innerHTML = "";
+  if (rejectedList) rejectedList.innerHTML = "";
 }
 
 function renderQuestGroup(group, targetElement) {
+  if (!targetElement) return;
+
   if (group.length === 0) {
-    const emptyMessage = document.createElement("div");
-    emptyMessage.className = "empty-state";
-    emptyMessage.textContent = "Keine Quests vorhanden.";
-    targetElement.appendChild(emptyMessage);
     return;
   }
 
@@ -115,15 +137,15 @@ function createQuestCard(quest) {
   title.textContent = quest.title;
 
   const assignee = document.createElement("p");
-  assignee.innerHTML = `<strong>Adressiert an:</strong> ${escapeHtml(quest.assignee)}`;
+  assignee.innerHTML = "<strong>Für:</strong> " + escapeHtml(quest.assignee);
 
   const description = document.createElement("p");
-  description.innerHTML = `<strong>Beschreibung:</strong> ${
-    quest.description ? escapeHtml(quest.description) : "Keine Beschreibung"
-  }`;
+  description.innerHTML =
+    "<strong>Beschreibung:</strong> " +
+    (quest.description ? escapeHtml(quest.description) : "Keine Beschreibung");
 
   const dueDate = document.createElement("p");
-  dueDate.innerHTML = `<strong>Datum:</strong> ${formatDate(quest.dueDate)}`;
+  dueDate.innerHTML = "<strong>Fällig am:</strong> " + formatDate(quest.dueDate);
 
   const statusInfo = document.createElement("p");
   statusInfo.className = "status-info";
@@ -133,20 +155,44 @@ function createQuestCard(quest) {
   actions.className = "quest-actions";
 
   if (quest.status === "requested") {
-    actions.appendChild(createButton("Annehmen", "accept-btn", () => updateStatus(quest.id, "accepted")));
-    actions.appendChild(createButton("Ablehnen", "reject-btn", () => updateStatus(quest.id, "rejected")));
+    actions.appendChild(
+      createButton("Annehmen", "accept-btn", function () {
+        updateStatus(quest.id, "accepted");
+      })
+    );
+    actions.appendChild(
+      createButton("Ablehnen", "reject-btn", function () {
+        updateStatus(quest.id, "rejected");
+      })
+    );
   }
 
   if (quest.status === "accepted") {
-    actions.appendChild(createButton("Als absolviert markieren", "complete-btn", () => updateStatus(quest.id, "completed")));
-    actions.appendChild(createButton("Ablehnen", "reject-btn", () => updateStatus(quest.id, "rejected")));
+    actions.appendChild(
+      createButton("Als absolviert markieren", "complete-btn", function () {
+        updateStatus(quest.id, "completed");
+      })
+    );
+    actions.appendChild(
+      createButton("Ablehnen", "reject-btn", function () {
+        updateStatus(quest.id, "rejected");
+      })
+    );
   }
 
   if (quest.status === "completed" || quest.status === "rejected") {
-    actions.appendChild(createButton("Zurück auf angefragt", "reset-btn", () => updateStatus(quest.id, "requested")));
+    actions.appendChild(
+      createButton("Zurück auf angefragt", "reset-btn", function () {
+        updateStatus(quest.id, "requested");
+      })
+    );
   }
 
-  actions.appendChild(createButton("Löschen", "delete-btn", () => deleteQuest(quest.id)));
+  actions.appendChild(
+    createButton("Löschen", "delete-btn", function () {
+      deleteQuest(quest.id);
+    })
+  );
 
   card.appendChild(title);
   card.appendChild(assignee);
@@ -160,9 +206,9 @@ function createQuestCard(quest) {
 
 function createButton(label, className, onClick) {
   const button = document.createElement("button");
+  button.type = "button";
   button.textContent = label;
   button.className = className;
-  button.type = "button";
   button.addEventListener("click", onClick);
   return button;
 }
@@ -193,7 +239,7 @@ function deleteQuest(id) {
 
 function getStatusText(quest) {
   if (quest.status === "requested") {
-    return "Status: Angefragt";
+    return "Status: Offen";
   }
 
   if (quest.status === "rejected") {
@@ -212,14 +258,14 @@ function getStatusText(quest) {
     due.setHours(0, 0, 0, 0);
 
     if (due.getTime() > today.getTime()) {
-      return `Status: Angenommen · Geplant für ${formatDate(quest.dueDate)}`;
+      return "Status: Angenommen";
     }
 
     if (due.getTime() === today.getTime()) {
       return "Status: Angenommen · Heute fällig";
     }
 
-    return `Status: Angenommen · Überfällig seit ${formatDate(quest.dueDate)}`;
+    return "Status: Angenommen · Überfällig";
   }
 
   return "Status unbekannt";
@@ -227,10 +273,15 @@ function getStatusText(quest) {
 
 function formatDate(dateString) {
   const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return dateString;
+  }
+
   return date.toLocaleDateString("de-DE", {
     year: "numeric",
-    month: "long",
-    day: "numeric"
+    month: "2-digit",
+    day: "2-digit"
   });
 }
 
