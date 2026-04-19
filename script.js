@@ -53,7 +53,9 @@ questForm.addEventListener("submit", function (event) {
 
 clearAllBtn.addEventListener("click", function () {
   const confirmed = confirm("Willst du wirklich alle Sidequests löschen?");
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
 
   quests = [];
   saveQuests();
@@ -61,21 +63,25 @@ clearAllBtn.addEventListener("click", function () {
 });
 
 function createId() {
-  if (window.crypto && crypto.randomUUID) {
-    return crypto.randomUUID();
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
   }
+
   return "quest-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
 }
 
 function loadQuests() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+
+    if (!raw) {
+      return [];
+    }
 
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.error("Fehler beim Laden:", error);
+    console.error("Fehler beim Laden der Quests:", error);
     return [];
   }
 }
@@ -101,29 +107,34 @@ function renderAll() {
 }
 
 function updateCounters(requested, accepted, completed, rejected) {
-  if (requestedCount) requestedCount.textContent = requested.length;
-  if (acceptedCount) acceptedCount.textContent = accepted.length;
-  if (completedCount) completedCount.textContent = completed.length;
-  if (rejectedCount) rejectedCount.textContent = rejected.length;
+  requestedCount.textContent = requested.length;
+  acceptedCount.textContent = accepted.length;
+  completedCount.textContent = completed.length;
+  rejectedCount.textContent = rejected.length;
 }
 
 function clearLists() {
-  if (requestedList) requestedList.innerHTML = "";
-  if (acceptedList) acceptedList.innerHTML = "";
-  if (completedList) completedList.innerHTML = "";
-  if (rejectedList) rejectedList.innerHTML = "";
+  requestedList.innerHTML = "";
+  acceptedList.innerHTML = "";
+  completedList.innerHTML = "";
+  rejectedList.innerHTML = "";
 }
 
 function renderQuestGroup(group, targetElement) {
-  if (!targetElement) return;
-
   if (group.length === 0) {
+    const emptyMessage = document.createElement("div");
+    emptyMessage.className = "empty-state";
+    emptyMessage.textContent = "Keine Quests vorhanden.";
+    targetElement.appendChild(emptyMessage);
     return;
   }
 
   group
-    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-    .forEach((quest) => {
+    .slice()
+    .sort(function (a, b) {
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    })
+    .forEach(function (quest) {
       const card = createQuestCard(quest);
       targetElement.appendChild(card);
     });
@@ -160,6 +171,7 @@ function createQuestCard(quest) {
         updateStatus(quest.id, "accepted");
       })
     );
+
     actions.appendChild(
       createButton("Ablehnen", "reject-btn", function () {
         updateStatus(quest.id, "rejected");
@@ -173,6 +185,7 @@ function createQuestCard(quest) {
         updateStatus(quest.id, "completed");
       })
     );
+
     actions.appendChild(
       createButton("Ablehnen", "reject-btn", function () {
         updateStatus(quest.id, "rejected");
@@ -207,15 +220,17 @@ function createQuestCard(quest) {
 function createButton(label, className, onClick) {
   const button = document.createElement("button");
   button.type = "button";
-  button.textContent = label;
   button.className = className;
+  button.textContent = label;
   button.addEventListener("click", onClick);
   return button;
 }
 
 function updateStatus(id, newStatus) {
-  quests = quests.map((quest) => {
-    if (quest.id !== id) return quest;
+  quests = quests.map(function (quest) {
+    if (quest.id !== id) {
+      return quest;
+    }
 
     return {
       ...quest,
@@ -230,9 +245,14 @@ function updateStatus(id, newStatus) {
 
 function deleteQuest(id) {
   const confirmed = confirm("Diese Sidequest wirklich löschen?");
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
 
-  quests = quests.filter((quest) => quest.id !== id);
+  quests = quests.filter(function (quest) {
+    return quest.id !== id;
+  });
+
   saveQuests();
   renderAll();
 }
@@ -240,14 +260,6 @@ function deleteQuest(id) {
 function getStatusText(quest) {
   if (quest.status === "requested") {
     return "Status: Offen";
-  }
-
-  if (quest.status === "rejected") {
-    return "Status: Abgelehnt";
-  }
-
-  if (quest.status === "completed") {
-    return "Status: Absolviert";
   }
 
   if (quest.status === "accepted") {
@@ -268,7 +280,15 @@ function getStatusText(quest) {
     return "Status: Angenommen · Überfällig";
   }
 
-  return "Status unbekannt";
+  if (quest.status === "completed") {
+    return "Status: Absolviert";
+  }
+
+  if (quest.status === "rejected") {
+    return "Status: Abgelehnt";
+  }
+
+  return "Status: Unbekannt";
 }
 
 function formatDate(dateString) {
