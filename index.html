@@ -13,27 +13,27 @@
         <p class="eyebrow">GUILD BOARD</p>
         <h1>Sidequest Simulator</h1>
       </div>
-      <button id="clearAllBtn" type="button">Speicher leeren</button>
+      <button id="clearAllBtn" type="button" class="secondary-btn">Speicher leeren</button>
     </header>
 
     <section class="top-grid">
       <section class="panel">
         <h2>Neue Sidequest anlegen</h2>
 
-        <form id="questForm">
+        <form id="questForm" class="quest-form">
           <label for="title">Titel</label>
-          <input id="title" type="text" placeholder="z. B. Bring mir einen Kaffee" />
+          <input id="title" name="title" type="text" placeholder="z. B. Bring mir einen Kaffee" required />
 
           <label for="assignee">Für wen?</label>
-          <input id="assignee" type="text" placeholder="z. B. Alex" />
+          <input id="assignee" name="assignee" type="text" placeholder="z. B. Alex" required />
 
           <label for="dueDate">Fällig am</label>
-          <input id="dueDate" type="date" />
+          <input id="dueDate" name="dueDate" type="date" required />
 
           <label for="description">Beschreibung</label>
-          <textarea id="description" rows="4" placeholder="Kurze Questbeschreibung..."></textarea>
+          <textarea id="description" name="description" rows="4" placeholder="Kurze Questbeschreibung..."></textarea>
 
-          <button type="submit">Sidequest hinzufügen</button>
+          <button type="submit" class="primary-btn">Sidequest hinzufügen</button>
         </form>
       </section>
 
