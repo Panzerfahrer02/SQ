@@ -7,118 +7,85 @@
   <link rel="stylesheet" href="design.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="hero">
+  <main class="container">
+    <header class="hero-card">
       <div>
-        <p class="eyebrow">Guild Board</p>
+        <p class="eyebrow">GUILD BOARD</p>
         <h1>Sidequest Simulator</h1>
-        <p class="hero-text">
-          Erstelle Sidequests, richte sie an eine Person und lass sie annehmen,
-          ablehnen oder später als absolviert markieren.
-        </p>
       </div>
-      <button id="resetStorageBtn" class="ghost-button">Speicher leeren</button>
+      <button id="clearAllBtn" type="button">Speicher leeren</button>
     </header>
 
-    <main class="grid-layout">
-      <section class="panel form-panel">
+    <section class="top-grid">
+      <section class="panel">
         <h2>Neue Sidequest anlegen</h2>
-        <form id="questForm" class="quest-form">
-          <label>
-            Titel
-            <input type="text" id="title" placeholder="z. B. Bring mir einen Kaffee" required />
-          </label>
 
-          <label>
-            Für wen?
-            <input type="text" id="assignee" placeholder="z. B. Alex" required />
-          </label>
+        <form id="questForm">
+          <label for="title">Titel</label>
+          <input id="title" type="text" placeholder="z. B. Bring mir einen Kaffee" />
 
-          <label>
-            Fällig am
-            <input type="date" id="dueDate" required />
-          </label>
+          <label for="assignee">Für wen?</label>
+          <input id="assignee" type="text" placeholder="z. B. Alex" />
 
-          <label>
-            Beschreibung
-            <textarea id="description" rows="4" placeholder="Kurze Questbeschreibung..."></textarea>
-          </label>
+          <label for="dueDate">Fällig am</label>
+          <input id="dueDate" type="date" />
 
-          <button type="submit" class="primary-button">Sidequest hinzufügen</button>
+          <label for="description">Beschreibung</label>
+          <textarea id="description" rows="4" placeholder="Kurze Questbeschreibung..."></textarea>
+
+          <button type="submit">Sidequest hinzufügen</button>
         </form>
       </section>
 
-      <section class="panel summary-panel">
+      <section class="panel">
         <h2>Statusübersicht</h2>
+
         <div class="stats-grid">
-          <article class="stat-card">
+          <div class="stat-box">
             <span>Offen</span>
-            <strong id="openCount">0</strong>
-          </article>
-          <article class="stat-card">
+            <strong id="requestedCount">0</strong>
+          </div>
+
+          <div class="stat-box">
             <span>Angenommen</span>
             <strong id="acceptedCount">0</strong>
-          </article>
-          <article class="stat-card">
+          </div>
+
+          <div class="stat-box">
             <span>Absolviert</span>
             <strong id="completedCount">0</strong>
-          </article>
-          <article class="stat-card">
+          </div>
+
+          <div class="stat-box">
             <span>Abgelehnt</span>
-            <strong id="declinedCount">0</strong>
-          </article>
+            <strong id="rejectedCount">0</strong>
+          </div>
         </div>
-        <p class="storage-hint">
-          Alle Daten werden lokal im Browser mit <code>localStorage</code> gespeichert.
-        </p>
+      </section>
+    </section>
+
+    <section class="panel">
+      <h2>Angefragte Sidequests</h2>
+      <div id="requestedList" class="quest-list"></div>
+    </section>
+
+    <section class="bottom-grid">
+      <section class="panel">
+        <h2>Angenommen</h2>
+        <div id="acceptedList" class="quest-list"></div>
       </section>
 
-      <section class="panel board-panel full-width">
-        <div class="section-header">
-          <h2>Angefragte Sidequests</h2>
-          <p>Hier können Quests angenommen oder abgelehnt werden.</p>
-        </div>
-        <div id="openQuests" class="quest-list"></div>
+      <section class="panel">
+        <h2>Absolviert</h2>
+        <div id="completedList" class="quest-list"></div>
       </section>
+    </section>
 
-      <section class="panel board-panel">
-        <div class="section-header">
-          <h2>Angenommen</h2>
-          <p>Bestätigt, aber noch nicht als absolviert markiert.</p>
-        </div>
-        <div id="acceptedQuests" class="quest-list"></div>
-      </section>
-
-      <section class="panel board-panel">
-        <div class="section-header">
-          <h2>Absolviert</h2>
-          <p>Erfolgreich abgeschlossene Sidequests.</p>
-        </div>
-        <div id="completedQuests" class="quest-list"></div>
-      </section>
-
-      <section class="panel board-panel full-width">
-        <div class="section-header">
-          <h2>Abgelehnt</h2>
-          <p>Diese Sidequests wurden nicht angenommen.</p>
-        </div>
-        <div id="declinedQuests" class="quest-list"></div>
-      </section>
-    </main>
-  </div>
-
-  <template id="questCardTemplate">
-    <article class="quest-card">
-      <div class="quest-topline">
-        <span class="badge"></span>
-        <small class="quest-date"></small>
-      </div>
-      <h3 class="quest-title"></h3>
-      <p class="quest-meta"></p>
-      <p class="quest-description"></p>
-      <div class="quest-actions"></div>
-    </article>
-  </template>
+    <section class="panel">
+      <h2>Abgelehnt</h2>
+      <div id="rejectedList" class="quest-list"></div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
